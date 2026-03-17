@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://agent-crm-1-s0b0.onrender.com/api",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
   headers: { "Content-Type": "application/json" },
 });
 
