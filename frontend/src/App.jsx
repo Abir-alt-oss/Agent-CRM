@@ -18,6 +18,9 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
         {/* Privé — avec Sidebar */}
         <Route
           path="/crm"
@@ -35,11 +38,9 @@ function App() {
           <Route path="archives" element={<Archives />} />
           <Route path="profil" element={<Profil />} />
           <Route path="admin" element={<Admin />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
+
         {/* Redirect par défaut */}
-        // ✅ APRÈS
         <Route path="*" element={<Navigate to="/crm/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
