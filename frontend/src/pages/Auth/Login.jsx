@@ -57,15 +57,39 @@ function Login() {
             autoComplete="current-password"
           />
         </div>
-
         <button
           className="btn btn-primary"
           onClick={handleSubmit}
           disabled={isLoading}
           style={{ width: "100%", justifyContent: "center", marginTop: "8px" }}
         >
-          {isLoading ? "Connexion..." : "Se connecter"}
+          {isLoading ? "Connexion en cours... (30s)" : "Se connecter"}
         </button>
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "12px",
+            fontSize: "13px",
+            color: "var(--text-muted)",
+          }}
+        >
+          <a href="/forgot-password" style={{ color: "var(--orange)" }}>
+            Mot de passe oublié ?
+          </a>
+        </p>
+
+        {isLoading && (
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "12px",
+              textAlign: "center",
+              marginTop: "8px",
+            }}
+          >
+            ⏳ Le serveur se réveille, patientez 30-60 secondes...
+          </p>
+        )}
       </div>
     </div>
   );

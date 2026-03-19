@@ -9,6 +9,8 @@ import AssureDetail from "./pages/Assures/AssureDetail";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Profil from "./pages/Profil/Profil";
 import Admin from "./pages/Admin/Admin";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
           <Route path="archives" element={<Archives />} />
           <Route path="profil" element={<Profil />} />
           <Route path="admin" element={<Admin />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
         {/* Redirect par défaut */}
         // ✅ APRÈS
