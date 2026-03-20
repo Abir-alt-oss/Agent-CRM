@@ -8,7 +8,6 @@ const generateToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-// Helper — crée transporter une seule fois
 const createTransporter = () =>
   nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -40,6 +39,7 @@ const getMe = async (req, res) => {
 
 // POST /api/auth/forgot-password
 const forgotPassword = async (req, res) => {
+  console.log("forgotPassword appelé avec :", req.body);
   try {
     const { email } = req.body;
     const agent = await Agent.findOne({ email });
@@ -52,6 +52,10 @@ const forgotPassword = async (req, res) => {
     await agent.save({ validateBeforeSave: false });
 
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    console.log("Envoi email à :", agent.email);
+    console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+
     await createTransporter().sendMail({
       from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
       to: agent.email,
@@ -87,8 +91,10 @@ const forgotPassword = async (req, res) => {
       `,
     });
 
+    console.log("✅ Email envoyé avec succès !");
     res.json({ message: "Email de réinitialisation envoyé." });
   } catch (err) {
+    console.error("ERREUR forgotPassword:", err.message);
     res
       .status(500)
       .json({ message: "Erreur envoi email.", error: err.message });
