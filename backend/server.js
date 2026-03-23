@@ -14,7 +14,15 @@ const rappelRoutes = require("./routes/rappel.routes");
 const { sendRappelsJob } = require("./controllers/rappel.controller");
 
 const app = express();
-
+const https = require("https");
+setInterval(
+  () => {
+    https.get("https://agent-crm-1-9nqp.onrender.com/api/health", () => {
+      console.log("🏓 Ping keep-alive");
+    });
+  },
+  14 * 60 * 1000,
+);
 // Middleware
 app.use(
   cors({
