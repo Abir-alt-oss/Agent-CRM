@@ -10,10 +10,13 @@ const generateToken = (id) =>
 
 const createTransporter = () =>
   nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
+    host: "smtp.sendgrid.net",
+    port: 587,
     secure: false,
-    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    auth: {
+      user: "apikey",
+      pass: process.env.SENDGRID_API_KEY,
+    },
   });
 
 // POST /api/auth/login

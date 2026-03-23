@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const cron = require("node-cron");
 
 dotenv.config();
-
+const PORT = process.env.PORT || 10000;
 const authRoutes = require("./routes/auth.routes");
 const prospectRoutes = require("./routes/prospect.routes");
 const assureRoutes = require("./routes/assure.routes");
@@ -16,7 +16,12 @@ const { sendRappelsJob } = require("./controllers/rappel.controller");
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Routes
@@ -42,8 +47,11 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connecté");
-    app.listen(process.env.PORT, () =>
-      console.log(`🚀 Serveur démarré sur le port ${process.env.PORT}`),
+    app.listen(PORT, () =>
+      console.log(`🚀 Serveur démarré sur le port ${PORT}`),
     );
   })
-  .catch((err) => console.error("❌ Erreur MongoDB:", err));
+  .catch((err) => {
+    console.error("❌ Erreur MongoDB:", err);
+    process.exit(1); // Force le redémarrage Render
+  });
