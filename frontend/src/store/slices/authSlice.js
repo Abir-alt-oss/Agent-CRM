@@ -43,6 +43,7 @@ const authSlice = createSlice({
       state.agent = null;
       state.token = null;
       localStorage.removeItem("token");
+      localStorage.removeItem("persist:agent-crm");
     },
     clearError(state) {
       state.error = null;
