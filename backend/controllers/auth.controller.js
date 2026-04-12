@@ -43,68 +43,28 @@ const getMe = async (req, res) => {
 };
 
 // POST /api/auth/forgot-password
-const forgotPassword = async (req, res) => {
-  console.log("forgotPassword appelé avec :", req.body);
-  try {
-    const { email } = req.body;
-    const agent = await Agent.findOne({ email });
-    if (!agent)
-      return res.status(404).json({ message: "Aucun compte avec cet email." });
+const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+console.log("Envoi email à :", agent.email);
+console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
 
-    const token = crypto.randomBytes(32).toString("hex");
-    agent.resetToken = token;
-    agent.resetTokenExpiry = Date.now() + 3600000;
-    await agent.save({ validateBeforeSave: false });
+try {
+  const transporter = createTransporter();
+  await transporter.verify();
+  console.log("✅ Transporter vérifié !");
+  await transporter.sendMail({
+    from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
+    to: agent.email,
+    subject: "Réinitialisation de votre mot de passe — Agent CRM",
+    text: `Bonjour ${agent.prenom}, voici votre lien de réinitialisation : ${resetUrl}`,
+  });
+  console.log("✅ Email envoyé !");
+} catch (emailErr) {
+  console.error("❌ ERREUR EMAIL:", emailErr.message);
+  console.error("❌ ERREUR STACK:", emailErr.stack);
+}
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
-    console.log("Envoi email à :", agent.email);
-    console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
-    console.log("EMAIL_USER:", process.env.EMAIL_USER);
-
-    await createTransporter().sendMail({
-      from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
-      to: agent.email,
-      subject: "Réinitialisation de votre mot de passe — Agent CRM",
-      html: `
-        <!DOCTYPE html>
-        <html><head><meta charset="UTF-8" /></head>
-        <body style="margin:0;padding:0;background:#0d0f14;font-family:Arial,sans-serif;">
-          <div style="background:linear-gradient(135deg,#f97316,#3b82f6);padding:40px 20px;text-align:center;">
-            <div style="font-size:48px;">🛡️</div>
-            <h1 style="color:white;margin:10px 0 4px;font-size:28px;">Agent CRM</h1>
-            <p style="color:rgba(255,255,255,0.8);margin:0;font-size:14px;">Plateforme de gestion assurance</p>
-          </div>
-          <div style="background:#151820;padding:40px 32px;">
-            <h2 style="color:#f97316;font-size:20px;margin-bottom:8px;">Réinitialisation de mot de passe 🔑</h2>
-            <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin-bottom:28px;">
-              Bonjour <b style="color:#e2e8f0;">${agent.prenom} ${agent.nom}</b>,<br/>
-              Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe.
-            </p>
-            <div style="text-align:center;margin-bottom:28px;">
-              <a href="${resetUrl}" style="background:linear-gradient(135deg,#f97316,#fb923c);color:white;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">
-                🔑 Réinitialiser mon mot de passe
-              </a>
-            </div>
-            <div style="background:#92400e20;border:1px solid #92400e;border-radius:8px;padding:14px 18px;">
-              <p style="color:#fbbf24;font-size:13px;margin:0;">⏰ Ce lien expire dans 1 heure.</p>
-            </div>
-          </div>
-          <div style="background:#0d0f14;padding:24px 32px;text-align:center;border-top:1px solid #1e2230;">
-            <p style="color:#475569;font-size:12px;margin:0;">Envoyé automatiquement par <b style="color:#f97316;">Agent CRM</b>.</p>
-          </div>
-        </body></html>
-      `,
-    });
-
-    console.log("✅ Email envoyé avec succès !");
-    res.json({ message: "Email de réinitialisation envoyé." });
-  } catch (err) {
-    console.error("ERREUR forgotPassword:", err.message);
-    res
-      .status(500)
-      .json({ message: "Erreur envoi email.", error: err.message });
-  }
-};
+res.json({ message: "Email de réinitialisation envoyé." });
 
 // POST /api/auth/reset-password
 const resetPassword = async (req, res) => {
