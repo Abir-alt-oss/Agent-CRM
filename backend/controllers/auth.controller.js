@@ -17,10 +17,9 @@ const createTransporter = () =>
       user: "apikey",
       pass: process.env.SENDGRID_API_KEY || process.env.EMAIL_PASS,
     },
-    tls: {
-      rejectUnauthorized: false,
-    },
+    tls: { rejectUnauthorized: false },
   });
+
 // POST /api/auth/login
 const login = async (req, res) => {
   try {
@@ -43,33 +42,42 @@ const getMe = async (req, res) => {
 };
 
 // POST /api/auth/forgot-password
-const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
-console.log("Envoi email à :", agent.email);
-console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
+const forgotPassword = async (req, res) => {
+  console.log("forgotPassword appelé avec :", req.body);
+  try {
+    const { email } = req.body;
+    const agent = await Agent.findOne({ email });
+    if (!agent)
+      return res.status(404).json({ message: "Aucun compte avec cet email." });
 
-try {
-  const transporter = createTransporter();
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error("❌ Transporter verify error:", error.message);
-    } else {
-      console.log("✅ Transporter vérifié !");
+    const token = crypto.randomBytes(32).toString("hex");
+    agent.resetToken = token;
+    agent.resetTokenExpiry = Date.now() + 3600000;
+    await agent.save({ validateBeforeSave: false });
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    console.log("Envoi email à :", agent.email);
+    console.log("EMAIL_HOST:", process.env.EMAIL_HOST);
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+
+    try {
+      await createTransporter().sendMail({
+        from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
+        to: agent.email,
+        subject: "Réinitialisation de votre mot de passe — Agent CRM",
+        text: `Bonjour ${agent.prenom}, voici votre lien : ${resetUrl}`,
+      });
+      console.log("✅ Email envoyé !");
+    } catch (emailErr) {
+      console.error("❌ ERREUR EMAIL:", emailErr.message);
     }
-  });
-  await transporter.sendMail({
-    from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
-    to: agent.email,
-    subject: "Réinitialisation de votre mot de passe — Agent CRM",
-    text: `Bonjour ${agent.prenom}, voici votre lien de réinitialisation : ${resetUrl}`,
-  });
-  console.log("✅ Email envoyé !");
-} catch (emailErr) {
-  console.error("❌ ERREUR EMAIL:", emailErr.message);
-  console.error("❌ ERREUR STACK:", emailErr.stack);
-}
 
-res.json({ message: "Email de réinitialisation envoyé." });
+    res.json({ message: "Email de réinitialisation envoyé." });
+  } catch (err) {
+    console.error("ERREUR forgotPassword:", err.message);
+    res.status(500).json({ message: "Erreur serveur.", error: err.message });
+  }
+};
 
 // POST /api/auth/reset-password
 const resetPassword = async (req, res) => {
@@ -123,9 +131,7 @@ const createAgent = async (req, res) => {
             </div>
             <div style="background:#151820;padding:40px 32px;">
               <h2 style="color:#f97316;font-size:20px;margin-bottom:8px;">Bienvenue ${agent.prenom} ${agent.nom} 👋</h2>
-              <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin-bottom:28px;">
-                Votre compte a été créé sur la plateforme Agent CRM.
-              </p>
+              <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin-bottom:28px;">Votre compte a été créé sur la plateforme Agent CRM.</p>
               <div style="background:#1e2230;border-radius:10px;padding:24px;margin-bottom:28px;border-left:4px solid #f97316;">
                 <table style="width:100%;border-collapse:collapse;">
                   <tr>
@@ -226,16 +232,8 @@ const updateAgent = async (req, res) => {
               <div style="background:#1e2230;border-radius:10px;padding:24px;margin-bottom:28px;border-left:4px solid #f97316;">
                 <table style="width:100%;border-collapse:collapse;">
                   <tr>
-                    <td style="color:#64748b;font-size:12px;padding:8px 0;text-transform:uppercase;">Prénom</td>
-                    <td style="color:#e2e8f0;font-size:14px;font-weight:600;padding:8px 0;">${agent.prenom}</td>
-                  </tr>
-                  <tr>
-                    <td style="color:#64748b;font-size:12px;padding:8px 0;text-transform:uppercase;border-top:1px solid #2a3045;">Nom</td>
-                    <td style="color:#e2e8f0;font-size:14px;font-weight:600;padding:8px 0;border-top:1px solid #2a3045;">${agent.nom}</td>
-                  </tr>
-                  <tr>
-                    <td style="color:#64748b;font-size:12px;padding:8px 0;text-transform:uppercase;border-top:1px solid #2a3045;">Email</td>
-                    <td style="color:#f97316;font-size:14px;font-weight:700;padding:8px 0;border-top:1px solid #2a3045;">${agent.email}</td>
+                    <td style="color:#64748b;font-size:12px;padding:8px 0;text-transform:uppercase;">Email</td>
+                    <td style="color:#f97316;font-size:14px;font-weight:700;padding:8px 0;">${agent.email}</td>
                   </tr>
                 </table>
               </div>
