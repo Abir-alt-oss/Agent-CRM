@@ -50,8 +50,13 @@ console.log("EMAIL_USER:", process.env.EMAIL_USER);
 
 try {
   const transporter = createTransporter();
-  await transporter.verify();
-  console.log("✅ Transporter vérifié !");
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error("❌ Transporter verify error:", error.message);
+    } else {
+      console.log("✅ Transporter vérifié !");
+    }
+  });
   await transporter.sendMail({
     from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
     to: agent.email,
