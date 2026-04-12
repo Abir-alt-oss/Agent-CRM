@@ -11,14 +11,16 @@ const generateToken = (id) =>
 const createTransporter = () =>
   nodemailer.createTransport({
     host: "smtp.sendgrid.net",
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
       user: "apikey",
       pass: process.env.SENDGRID_API_KEY || process.env.EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
-
 // POST /api/auth/login
 const login = async (req, res) => {
   try {
