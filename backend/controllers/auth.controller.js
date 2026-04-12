@@ -62,7 +62,7 @@ const forgotPassword = async (req, res) => {
 
     try {
       await createTransporter().sendMail({
-        from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
+        from: `"Agent CRM" <ouelhaziabir.92@gmail.com>`,
         to: agent.email,
         subject: "Réinitialisation de votre mot de passe — Agent CRM",
         text: `Bonjour ${agent.prenom}, voici votre lien : ${resetUrl}`,
@@ -117,7 +117,7 @@ const createAgent = async (req, res) => {
 
     try {
       await createTransporter().sendMail({
-        from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
+        from: `"Agent CRM" <ouelhaziabir.92@gmail.com>`,
         to: agent.email,
         subject: "Bienvenue sur Agent CRM",
         html: `
@@ -212,7 +212,7 @@ const updateAgent = async (req, res) => {
 
     try {
       await createTransporter().sendMail({
-        from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
+        from: `"Agent CRM" <ouelhaziabir.92@gmail.com>`,
         to: agent.email,
         subject: "Vos informations ont été mises à jour — Agent CRM",
         html: `
