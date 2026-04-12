@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 const Agent = require("../models/Agent");
 
 const generateToken = (id) =>
@@ -8,19 +8,21 @@ const generateToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const sendEmail = async ({ to, subject, html, text }) => {
-  const { data, error } = await resend.emails.send({
-    from: "Agent CRM <onboarding@resend.dev>",
+const sendEmail = async ({ to, subject, html }) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  await transporter.sendMail({
+    from: `"Agent CRM" <${process.env.EMAIL_USER}>`,
     to,
     subject,
-    html: html || `<p>${text}</p>`,
+    html,
   });
-  if (error) throw new Error(error.message);
-  return data;
 };
-
 // POST /api/auth/login
 const login = async (req, res) => {
   try {
